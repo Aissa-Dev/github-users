@@ -7,14 +7,27 @@ import axios from "axios";
 
 function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
   const [open, setOpen] = useState(false);
-  const [followers, setFollowers] = useState(null);
-  const [following, setFollowing] = useState(null);
-  const [repos, setRepos] = useState(null);
-
-  // useEffect(() => {
-  //   setFollowers(convert(followersUrl));
-  // }, []);
   const cancelButtonRef = useRef(null);
+  const [following, setFollowing] = useState([]);
+  const [followers, setFollowers] = useState([]);
+  const [repos, setRepos] = useState([]);
+
+  useEffect(async () => {
+    const fetchData = async () => {
+      followingUrl = followingUrl.replace("{/other_user}", "");
+
+      const following_ = await axios(followingUrl);
+      const followers_ = await axios(followersUrl);
+      const repos_ = await axios(reposUrl);
+
+      setFollowing(following_.data);
+      setFollowers(followers_.data);
+      setRepos(repos_.data);
+    };
+
+    fetchData();
+  }, []);
+
   const [people, setPeople] = useState(null);
   const handlePeople = async (p) => {
     const pp = await axios.get(p);
@@ -22,13 +35,7 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
     setOpen(true);
     setPeople(pp.data);
   };
-  const convert = async (url) => {
-    console.log("start");
-    const link = url.replace("{/other_user}", "");
-    const array = await axios.get(link);
-    console.log("returned data : ", array);
-    return array;
-  };
+
   return (
     <div className="w-full bg-white rounded-lg sahdow-lg overflow-hidden flex flex-col md:flex-row">
       <div className="w-full md:w-40 h-32">
@@ -42,22 +49,19 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
         <p className="text-xl text-gray-700 font-bold">{name}</p>
         <div className="flex justify-between text-primary ">
           <button
-            onClick={() => handlePeople(followers)}
+            onClick={() => handlePeople(followersUrl)}
             className="text-blue-700 text-sm font-semibold"
           >
-            {/* {getLength(followers)}  */}
-            Followers
+            {followers.length} Followers
           </button>
           <button
-            onClick={() => handlePeople(following)}
+            onClick={() => handlePeople(followingUrl)}
             className="text-blue-700 text-sm font-semibold"
           >
-            {/* {getLength(following)}  */}
-            Following
+            {following.length} Following
           </button>
           <button className="text-blue-700 text-sm font-semibold">
-            {/* {getLength(repos)}  */}
-            Repos
+            {repos.length} Repos
           </button>
         </div>
         <div className="flex justify-end">
