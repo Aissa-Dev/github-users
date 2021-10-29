@@ -1,6 +1,8 @@
 const initialState = {
   users: [],
-  isLoading: true
+  searched: [],
+  isLoading: true,
+  isSearched: false
 };
 
 export const usersReducer = (state = initialState, action) => {
@@ -10,6 +12,13 @@ export const usersReducer = (state = initialState, action) => {
         ...state,
         users: action.payload.users,
         isLoading: false
+      };
+    case "FETCH_NAMES":
+      return {
+        ...state,
+        // searched: action.payload.searched.items,
+        users: action.payload.searched.items,
+        isSearched: true
       };
     default:
       return { ...state };

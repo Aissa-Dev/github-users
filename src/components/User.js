@@ -4,6 +4,7 @@ import { Dialog, Transition } from "@headlessui/react";
 import { ExclamationIcon } from "@heroicons/react/outline";
 import FollowList from "./FollowList";
 import axios from "axios";
+import ReposList from "./ReposList";
 
 function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
   const [open, setOpen] = useState(false);
@@ -11,17 +12,36 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
   const [following, setFollowing] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [repos, setRepos] = useState([]);
+  const [modal, setModal] = useState(null);
 
   useEffect(async () => {
+    console.log(followersUrl);
+    console.log(followingUrl);
+    console.log(reposUrl);
     const fetchData = async () => {
       followingUrl = followingUrl.replace("{/other_user}", "");
 
-      const following_ = await axios(followingUrl);
-      const followers_ = await axios(followersUrl);
-      const repos_ = await axios(reposUrl);
+      const following_ = await axios(followingUrl, {
+        headers: {
+          authorization: "token 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"
+        }
+      });
+      const followers_ = await axios(followersUrl, {
+        headers: {
+          authorization: "token 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"
+        }
+      });
+      console.log("followers : ", followers_);
+      const repos_ = await axios(reposUrl, {
+        headers: {
+          authorization: "token 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"
+        }
+      });
 
       setFollowing(following_.data);
+
       setFollowers(followers_.data);
+
       setRepos(repos_.data);
     };
 
@@ -30,10 +50,19 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
 
   const [people, setPeople] = useState(null);
   const handlePeople = async (p) => {
-    const pp = await axios.get(p);
+    p = p.replace("{/other_user}", "");
+    const pp = await axios.get(p, {
+      headers: {
+        authorization: "token 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"
+      }
+    });
     console.log("pp : ", pp);
+    setModal(<FollowList people={pp.data} />);
     setOpen(true);
-    setPeople(pp.data);
+  };
+  const handleRepos = (r) => {
+    setModal(<ReposList repos={r} />);
+    setOpen(true);
   };
 
   return (
@@ -52,16 +81,19 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
             onClick={() => handlePeople(followersUrl)}
             className="text-blue-700 text-sm font-semibold"
           >
-            {followers.length} Followers
+            Followers
           </button>
           <button
             onClick={() => handlePeople(followingUrl)}
             className="text-blue-700 text-sm font-semibold"
           >
-            {following.length} Following
+            Following
           </button>
-          <button className="text-blue-700 text-sm font-semibold">
-            {repos.length} Repos
+          <button
+            onClick={() => handleRepos(repos)}
+            className="text-blue-700 text-sm font-semibold"
+          >
+            Repos
           </button>
         </div>
         <div className="flex justify-end">
@@ -111,7 +143,8 @@ function User({ name, image, link, followersUrl, followingUrl, reposUrl }) {
             >
               {/* <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full"> */}
               <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
-                <FollowList people={people} />
+                {modal}
+
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
                   <button
                     type="button"
